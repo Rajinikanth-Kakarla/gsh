@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09090f">
+  <title>GSH | Interview Preparation</title>
+  <style>
+    :root{--bg:#09090f;--surface:#12121c;--surface2:#191927;--line:#29293a;--text:#f7f7fb;--muted:#a4a4b5;--purple:#963cff;}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+    a{color:inherit;text-decoration:none}
+    .shell{width:min(1180px,calc(100% - 32px));margin:auto}
+    header{border-bottom:1px solid var(--line);background:#0d0d15}
+    .topbar{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:11px;font-weight:900;letter-spacing:.05em}
+    .mark{width:42px;height:42px;border:1px solid #65418f;border-radius:10px;display:grid;place-items:center;color:#fff}
+    .mark span{color:#c58aff}
+    .brand small{display:block;color:#c58aff;font-size:10px;margin-top:3px}
+    .back{border:1px solid var(--line);padding:10px 14px;border-radius:9px;font-size:12px;font-weight:800}
+    main{padding:28px 0 55px}
+    .heading{margin-bottom:20px}
+    .eyebrow{color:#c58aff;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+    h1{font-size:clamp(25px,4vw,38px);margin:8px 0}
+    .sub{color:var(--muted);font-size:13px;line-height:1.6;margin:0}
+    .workspace{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px;min-height:560px}
+    .sidebar,.viewer{background:var(--surface);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+    .side-head{padding:16px;border-bottom:1px solid var(--line);font-size:11px;font-weight:900;letter-spacing:.1em}
+    .topic-list{padding:10px;display:grid;gap:7px;align-content:start}
+    .topic{width:100%;text-align:left;background:var(--surface2);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:13px 12px;font-weight:750;font-size:13px;cursor:pointer}
+    .topic:hover,.topic.active{border-color:#8b45d1;background:#251536}
+    .viewer{padding:clamp(18px,3vw,30px)}
+    .viewer h2{font-size:22px;margin:0 0 18px}
+    .content{font-size:14px;line-height:1.8;color:#dedee8;white-space:pre-wrap;overflow-wrap:anywhere}
+    .content a{color:#c58aff;text-decoration:underline}
+    .status{color:var(--muted);font-size:13px;line-height:1.6}
+    footer{border-top:1px solid var(--line);padding:20px 0;color:#777789;font-size:11px}
+    @media(max-width:700px){.workspace{grid-template-columns:1fr;min-height:0}.topic-list{grid-template-columns:1fr 1fr}.viewer{min-height:300px}}
+    @media(max-width:430px){.topic-list{grid-template-columns:1fr}.brand-name{font-size:12px}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="shell topbar">
+    <a class="brand" href="index.html"><span class="mark">G<span>S</span>H</span><span class="brand-name">GET SET<small>HIRED</small></span></a>
+    <a class="back" href="index.html">← Career site</a>
+  </div>
+</header>
+<main class="shell">
+  <div class="heading">
+    <div class="eyebrow">GSH Preparation Centre</div>
+    <h1>Interview Preparation</h1>
+    <p class="sub">Choose a topic from the left to view its learning material.</p>
+  </div>
+  <div class="workspace">
+    <aside class="sidebar">
+      <div class="side-head">TOPICS</div>
+      <div id="topicList" class="topic-list"><div class="status">Loading topics from Google Sheets…</div></div>
+    </aside>
+    <section class="viewer" aria-live="polite">
+      <div id="topicTitle"><h2>Select a topic</h2></div>
+      <div id="topicContent" class="content status">Topic content will appear here.</div>
+    </section>
+  </div>
+</main>
+<footer><div class="shell">© <span id="year"></span> GSH — Get Set Hired</div></footer>
+<script>
+/* Publish this page's Google Sheets tab as CSV and paste its URL below.
+   Required columns: topic, content
+   Optional column: order (numeric; controls topic order)
+*/
+const TOPICS_CSV_URL = "PASTE_THIS_PAGE_PUBLISHED_GOOGLE_SHEET_CSV_URL_HERE";
+const $ = id => document.getElementById(id);
+$("year").textContent = new Date().getFullYear();
+
+function parseCSV(text) {
+  const rows=[]; let row=[], value="", quoted=false;
+  for(let i=0;i<text.length;i++) {
+    const c=text[i], next=text[i+1];
+    if(c === '"' && quoted && next === '"') { value+='"'; i++; }
+    else if(c === '"') quoted=!quoted;
+    else if(c === ',' && !quoted) { row.push(value); value=""; }
+    else if((c === '\\n' || c === '\\r') && !quoted) {
+      if(c === '\\r' && next === '\\n') i++;
+      row.push(value); if(row.some(v=>v.trim())) rows.push(row);
+      row=[]; value="";
+    } else value+=c;
+  }
+  row.push(value); if(row.some(v=>v.trim())) rows.push(row);
+  if(!rows.length) return [];
+  const headers=rows.shift().map(h=>h.trim().toLowerCase().replace(/\\s+/g,""));
+  return rows.map(r=>Object.fromEntries(headers.map((h,i)=>[h,(r[i]||"").trim()])));
+}
+function safeText(value) {
+  return String(value||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function showTopic(item, button) {
+  document.querySelectorAll(".topic").forEach(el=>el.classList.remove("active"));
+  button.classList.add("active");
+  $("topicTitle").innerHTML = `<h2>${safeText(item.topic)}</h2>`;
+  // Content is rendered as plain text to prevent spreadsheet entries from injecting HTML.
+  $("topicContent").textContent = item.content || "Content will be added soon.";
+}
+async function loadTopics() {
+  if(!TOPICS_CSV_URL.startsWith("https://")) {
+    $("topicList").innerHTML='<div class="status">Add this page’s published CSV URL to TOPICS_CSV_URL in this file.</div>';
+    $("topicContent").textContent="Google Sheets is not connected yet.";
+    return;
+  }
+  try {
+    const response=await fetch(TOPICS_CSV_URL,{cache:"no-store"});
+    if(!response.ok) throw new Error("Could not load the published sheet.");
+    const topics=parseCSV(await response.text())
+      .filter(x=>x.topic && x.content)
+      .sort((a,b)=>(Number(a.order)||9999)-(Number(b.order)||9999));
+    if(!topics.length) {
+      $("topicList").innerHTML='<div class="status">No topics found. Add rows with topic and content columns.</div>';
+      return;
+    }
+    $("topicList").innerHTML="";
+    topics.forEach((item,index)=>{
+      const button=document.createElement("button");
+      button.className="topic";
+      button.type="button";
+      button.textContent=item.topic;
+      button.addEventListener("click",()=>showTopic(item,button));
+      $("topicList").appendChild(button);
+      if(index===0) showTopic(item,button);
+    });
+  } catch(error) {
+    $("topicList").innerHTML='<div class="status">Unable to load topics. Check the published CSV URL and sharing settings.</div>';
+    $("topicContent").textContent=error.message;
+  }
+}
+loadTopics();
+setInterval(loadTopics,5*60*1000);
+</script>
+</body>
+</html>

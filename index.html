@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#09090f">
+  <link rel="icon" type="image/png"
+      href="img/GSH Get Set Hired Logo.png" class="site-logo">
   <title>GSH | Get Set Hired</title>
   <style>
     :root {
@@ -93,6 +95,15 @@
       .brand-name{display:none}
       .section-row{align-items:flex-start;flex-direction:column}
     }
+    .site-logo {
+    width: 80px;
+    height: auto;
+    object-fit: contain;
+}
+
+.prep-card {
+  cursor: pointer;
+}
   </style>
 </head>
 <body>
@@ -109,9 +120,10 @@
       <button class="nav-btn" data-page="prep">PREP CONTENT</button>
     </nav>
 <div class="counter">
-  TOTAL VISITS: <strong id="visitorCount">0</strong>
-  &nbsp; | &nbsp;
-  ONLINE: <strong id="onlineCount">0</strong>
+  TOTAL VISITS: <strong id="visitorCount">Loading...</strong>
+  |
+  ONLINE: <strong id="onlineCount">Loading...</strong>
+</div>
 </div>  </div>
 </header>
 
@@ -160,11 +172,26 @@
   <section id="prepPage" class="page hidden">
     <div class="hero"><div><div class="eyebrow">Prepare with confidence</div><h1>Get ready to <span>stand out.</span></h1><p class="sub">Use these preparation areas to structure your learning and interview practice.</p></div></div>
     <div class="prep-grid">
-      <article class="prep-card"><h3>Resume preparation</h3><p>Build a clear, role-focused resume that highlights your projects, skills and experience.</p></article>
-      <article class="prep-card"><h3>Interview practice</h3><p>Practice introducing yourself, explaining your projects and answering role-specific questions.</p></article>
-      <article class="prep-card"><h3>Aptitude preparation</h3><p>Work on quantitative aptitude, logical reasoning and verbal ability.</p></article>
-      <article class="prep-card"><h3>Technical preparation</h3><p>Revise core concepts, problem-solving and the technical skills required for your target role.</p></article>
-    </div>
+  <article class="prep-card" onclick="window.location.href='prep/resume.html'">
+    <h3>Resume preparation</h3>
+    <p>Build a clear, role-focused resume that highlights your projects, skills and experience.</p>
+  </article>
+
+  <article class="prep-card" onclick="window.location.href='prep/interviewprep.html'">
+    <h3>Interview practice</h3>
+    <p>Practice introducing yourself, explaining your projects and answering role-specific questions.</p>
+  </article>
+
+  <article class="prep-card" onclick="window.location.href='prep/aptitude.html'">
+    <h3>Aptitude preparation</h3>
+    <p>Work on quantitative aptitude, logical reasoning and verbal ability.</p>
+  </article>
+
+  <article class="prep-card" onclick="window.location.href='prep/techprep.html'">
+    <h3>Technical preparation</h3>
+    <p>Revise core concepts, problem-solving and the technical skills required for your target role.</p>
+  </article>
+</div>
   </section>
 </main>
 
@@ -295,10 +322,14 @@ setInterval(loadJobs, 5 * 60 * 1000); // Refresh spreadsheet listings every five
 /* JSONP lets the static GitHub Pages site read the shared counter
    without needing a server or permissive browser CORS settings. */
 
+
 let visitorSession = sessionStorage.getItem("gsh_session");
 
 if (!visitorSession) {
-  visitorSession = crypto.randomUUID();
+  visitorSession = crypto.randomUUID
+    ? crypto.randomUUID()
+    : "gsh-" + Date.now() + Math.random();
+
   sessionStorage.setItem("gsh_session", visitorSession);
 }
 
@@ -308,29 +339,55 @@ function updateCounter(action) {
   const callback = "gshCallback" + (++requestId);
   const script = document.createElement("script");
 
-  window[callback] = function(data) {
-    if (data && typeof data.total === "number") {
-      $("visitorCount").textContent = data.total.toLocaleString();
-      $("onlineCount").textContent = data.online.toLocaleString();
-    }
-
-    delete window[callback];
-    script.remove();
-  };
-
-  script.onerror = function() {
-    delete window[callback];
-    script.remove();
-  };
-
   const params = new URLSearchParams({
     action: action,
     session: visitorSession,
-    callback: callback
+    callback: callback,
+    t: Date.now()
   });
+
+  let finished = false;
+
+  function cleanup() {
+    finished = true;
+    delete window[callback];
+    script.remove();
+  }
+
+  window[callback] = function(data) {
+    if (finished) return;
+
+    if (data &&
+        typeof data.total === "number" &&
+        typeof data.online === "number") {
+
+      document.getElementById("visitorCount").textContent =
+        data.total.toLocaleString();
+
+      document.getElementById("onlineCount").textContent =
+        data.online.toLocaleString();
+
+    } else {
+      console.error("Invalid counter response:", data);
+    }
+
+    cleanup();
+  };
+
+  script.onerror = function() {
+    console.error("Counter request failed.");
+    cleanup();
+  };
 
   script.src = COUNTER_SCRIPT_URL + "?" + params.toString();
   document.head.appendChild(script);
+
+  setTimeout(() => {
+    if (!finished) {
+      console.error("Counter request timed out.");
+      cleanup();
+    }
+  }, 15000);
 }
 
 updateCounter("visit");
@@ -338,6 +395,7 @@ updateCounter("visit");
 setInterval(() => {
   updateCounter("heartbeat");
 }, 20000);
+
 
 </script>
 </body>
