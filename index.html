@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09090f">
+  <title>GSH | Get Set Hired</title>
+  <style>
+    :root {
+      --bg:#09090f; --surface:#12121c; --surface-2:#191927; --line:#29293a;
+      --text:#f7f7fb; --muted:#a4a4b5; --purple:#963cff; --purple-2:#7024d6;
+      --green:#6ee7b7; --danger:#ff8a8a; --radius:16px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    button,input,select{font:inherit}
+    button,a{ -webkit-tap-highlight-color:transparent }
+    .shell{width:min(1180px,calc(100% - 36px));margin:auto}
+    header{position:sticky;top:0;z-index:20;background:rgba(9,9,15,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+    .topbar{min-height:82px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .brand{display:flex;align-items:center;gap:12px;color:var(--text);text-decoration:none;flex-shrink:0}
+    .brand-mark{width:48px;height:48px;border:1px solid #55516b;border-radius:12px;display:grid;place-items:center;font-weight:950;font-size:18px;letter-spacing:-2px;background:#11111a}
+    .brand-mark span{color:var(--purple)}
+    .brand-name{font-size:13px;font-weight:800;letter-spacing:.08em;line-height:1.2}
+    .brand-name b{color:var(--purple)}
+    nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}
+    .nav-btn{border:0;background:transparent;color:var(--muted);padding:11px 12px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer}
+    .nav-btn:hover,.nav-btn.active{background:#211532;color:#fff}
+    .counter{border:1px solid #51406b;border-radius:10px;padding:10px 13px;font-size:11px;font-weight:800;white-space:nowrap;color:#ddd}
+    .counter strong{color:#c58aff;font-variant-numeric:tabular-nums}
+    main{min-height:calc(100vh - 160px);padding:34px 0 70px}
+    .hero{padding:36px 0 26px;display:flex;align-items:flex-end;justify-content:space-between;gap:25px}
+    .eyebrow{color:#c58aff;text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:900}
+    h1{font-size:clamp(30px,5vw,52px);line-height:1.05;letter-spacing:-.045em;margin:12px 0}
+    h1 span{color:var(--purple)}
+    .sub{color:var(--muted);max-width:590px;line-height:1.7;margin:0}
+    .hero-note{border:1px solid var(--line);border-radius:13px;padding:13px 16px;color:var(--muted);font-size:12px;max-width:220px}
+    .hero-note b{display:block;color:#fff;font-size:14px;margin-bottom:4px}
+    .filters{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:17px;margin:20px 0}
+    .filter-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}
+    .filter-head h2{font-size:12px;letter-spacing:.12em;margin:0}
+    .clear-btn{background:none;border:0;color:#c58aff;font-size:12px;cursor:pointer}
+    .filter-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+    .field{width:100%;min-width:0;background:#0d0d15;border:1px solid var(--line);border-radius:10px;padding:13px 14px;color:#fff;outline:none}
+    .field:focus{border-color:var(--purple)}
+    .field::placeholder{color:#777789}
+    select.field{color-scheme:dark}
+    .section-row{display:flex;justify-content:space-between;align-items:center;gap:15px;margin:28px 0 14px}
+    .section-row h2{font-size:17px;margin:0}
+    .result-count{color:var(--muted);font-size:12px}
+    .job-list{display:grid;gap:13px}
+    .job-card{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;transition:.2s}
+    .job-card:hover{border-color:#65418f;transform:translateY(-1px)}
+    .job-type{display:inline-flex;align-items:center;gap:6px;color:#d1aaff;background:#27163b;border:1px solid #48266b;border-radius:30px;padding:5px 9px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+    .job-card h3{font-size:19px;margin:11px 0 7px;letter-spacing:-.02em}
+    .description{color:var(--muted);font-size:13px;line-height:1.65;margin:0;white-space:pre-line}
+    .meta{display:flex;gap:13px;flex-wrap:wrap;color:#aaaabd;font-size:11px;margin-top:12px}
+    .skills{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+    .skill{background:#202030;border:1px solid #343448;color:#d7d7e5;border-radius:30px;padding:5px 9px;font-size:10px}
+    .apply{display:inline-flex;justify-content:center;align-items:center;min-width:112px;background:var(--purple);color:white;text-decoration:none;border:0;border-radius:10px;padding:12px 17px;font-size:12px;font-weight:900;cursor:pointer}
+    .apply:hover{background:var(--purple-2)}
+    .empty,.loading,.error{padding:35px;text-align:center;border:1px dashed var(--line);border-radius:var(--radius);color:var(--muted);line-height:1.6}
+    .error{color:var(--danger)}
+    .page-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px}
+    .page-panel h2{margin-top:0}
+    .quick-links{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+    .quick-link{display:block;padding:18px;background:#191927;border:1px solid var(--line);border-radius:13px;color:white;text-decoration:none}
+    .quick-link b{display:block;margin-bottom:6px}
+    .quick-link span{font-size:12px;color:var(--muted)}
+    .prep-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
+    .prep-card{padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+    .prep-card h3{margin:0 0 8px}
+    .prep-card p{color:var(--muted);font-size:13px;line-height:1.6}
+    footer{border-top:1px solid var(--line);padding:22px 0;color:#777789;font-size:11px}
+    .footer-inner{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+    .hidden{display:none!important}
+    @media(max-width:800px){
+      .topbar{padding:12px 0;flex-wrap:wrap}
+      nav{order:3;width:100%;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}
+      .nav-btn{white-space:nowrap}
+      .counter{margin-left:auto}
+      .hero{align-items:flex-start;flex-direction:column}
+      .hero-note{max-width:none;width:100%}
+    }
+    @media(max-width:600px){
+      .shell{width:min(100% - 24px,1180px)}
+      main{padding-top:18px}
+      .filter-grid{grid-template-columns:1fr}
+      .job-card{grid-template-columns:1fr;padding:17px}
+      .apply{width:100%}
+      .quick-links,.prep-grid{grid-template-columns:1fr}
+      .brand-name{display:none}
+      .section-row{align-items:flex-start;flex-direction:column}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="shell topbar">
+    <a class="brand" href="#home" aria-label="GSH home">
+      <img src="img/GSH Get Set Hired Logo.png" alt="gsh" srcset="" height=95px width=95px>
+    </a>
+    <nav aria-label="Main navigation">
+      <button class="nav-btn active" data-page="home">HOME</button>
+      <button class="nav-btn" data-page="internships">INTERNSHIPS</button>
+      <button class="nav-btn" data-page="jobs">JOBS</button>
+      <button class="nav-btn" data-page="walkins">WALK-INS</button>
+      <button class="nav-btn" data-page="prep">PREP CONTENT</button>
+    </nav>
+    <div class="counter">VISITOR COUNT: <strong id="visitorCount">—</strong></div>
+  </div>
+</header>
+
+<main class="shell">
+  <section id="homePage" class="page">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">Your next opportunity starts here</div>
+        <h1>Get set. Get skilled.<br><span>Get hired.</span></h1>
+        <p class="sub">Explore verified opportunities, discover internships and prepare for your next career move.</p>
+      </div>
+      <div class="hero-note"><b>One place. More opportunities.Fresh listings are loaded!</b></div>
+    </div>
+    <div class="filters">
+      <div class="filter-head"><h2>FILTER OPPORTUNITIES</h2><button class="clear-btn" id="clearFilters">Clear filters</button></div>
+      <div class="filter-grid">
+        <input id="searchInput" class="field" type="search" placeholder="Search job title, company or skill…">
+        <select id="locationFilter" class="field"><option value="">All locations</option></select>
+        <select id="typeFilter" class="field">
+          <option value="">All opportunities</option><option value="job">Jobs</option><option value="internship">Internships</option><option value="walk-in">Walk-ins</option>
+        </select>
+      </div>
+    </div>
+    <div class="section-row"><h2>Latest opportunities</h2><span class="result-count" id="resultCount">Loading listings…</span></div>
+    <div id="jobList" class="job-list"><div class="loading">Loading opportunities from Google Sheets…</div></div>
+  </section>
+
+  <section id="internshipsPage" class="page hidden">
+    <div class="hero"><div><div class="eyebrow">Start building experience</div><h1>Explore <span>internships.</span></h1><p class="sub">Discover internship opportunities and take the next step in your career.</p></div></div>
+    <div class="section-row"><h2>Internship listings</h2><span class="result-count" id="internshipCount"></span></div>
+    <div id="internshipList" class="job-list"><div class="loading">Loading internships…</div></div>
+  </section>
+
+  <section id="jobsPage" class="page hidden">
+    <div class="hero"><div><div class="eyebrow">Find your next role</div><h1>Find your <span>job.</span></h1><p class="sub">Browse opportunities shared by the GSH team.</p></div></div>
+    <div class="section-row"><h2>Job listings</h2><span class="result-count" id="jobsCount"></span></div>
+    <div id="jobsOnlyList" class="job-list"><div class="loading">Loading jobs…</div></div>
+  </section>
+
+  <section id="walkinsPage" class="page hidden">
+    <div class="hero"><div><div class="eyebrow">Meet employers directly</div><h1>Walk-in <span>opportunities.</span></h1><p class="sub">Find walk-in interviews and hiring events. Check each listing for the latest venue and timing.</p></div></div>
+    <div class="section-row"><h2>Upcoming walk-ins</h2><span class="result-count" id="walkinsCount"></span></div>
+    <div id="walkinsList" class="job-list"><div class="loading">Loading walk-ins…</div></div>
+  </section>
+
+  <section id="prepPage" class="page hidden">
+    <div class="hero"><div><div class="eyebrow">Prepare with confidence</div><h1>Get ready to <span>stand out.</span></h1><p class="sub">Use these preparation areas to structure your learning and interview practice.</p></div></div>
+    <div class="prep-grid">
+      <article class="prep-card"><h3>Resume preparation</h3><p>Build a clear, role-focused resume that highlights your projects, skills and experience.</p></article>
+      <article class="prep-card"><h3>Interview practice</h3><p>Practice introducing yourself, explaining your projects and answering role-specific questions.</p></article>
+      <article class="prep-card"><h3>Aptitude preparation</h3><p>Work on quantitative aptitude, logical reasoning and verbal ability.</p></article>
+      <article class="prep-card"><h3>Technical preparation</h3><p>Revise core concepts, problem-solving and the technical skills required for your target role.</p></article>
+    </div>
+  </section>
+</main>
+
+<footer><div class="shell footer-inner"><span>© <span id="year"></span> GSH — Get Set Hired</span><span>Opportunities to help you move forward.</span></div></footer>
+
+<script>
+/* ===================== GSH CONFIGURATION =====================
+   1. Publish your Google Sheet tab as CSV and paste its URL below.
+   2. Deploy the visitor-counter Apps Script as a Web App and paste
+      its /exec URL into COUNTER_SCRIPT_URL.
+   Required sheet headers:
+   title | description | skills | type | location | company | applyLink
+   Optional: deadline
+   type should be: job, internship, or walk-in
+================================================================ */
+const JOBS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQv4nsIIPpxot6UVsdzmAWAmXA9iMmTDrOJla6Tf_e0CKn9UqkZrO5dLw7u-LdaIUHI7ieOjj7l7v77/pub?gid=0&single=true&output=csv";
+const COUNTER_SCRIPT_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+let allJobs = [];
+const $ = (id) => document.getElementById(id);
+
+function csvToRows(text) {
+  const rows=[]; let row=[], value="", quoted=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i], next=text[i+1];
+    if(c === '"' && quoted && next === '"'){value+='"';i++;}
+    else if(c === '"'){quoted=!quoted;}
+    else if(c === ',' && !quoted){row.push(value);value="";}
+    else if((c === '\n' || c === '\r') && !quoted){
+      if(c === '\r' && next === '\n') i++;
+      row.push(value); if(row.some(v=>v.trim()!=="")) rows.push(row);
+      row=[];value="";
+    } else value+=c;
+  }
+  row.push(value); if(row.some(v=>v.trim()!=="")) rows.push(row);
+  if(!rows.length) return [];
+  const headers=rows.shift().map(h=>h.trim().toLowerCase().replace(/\s+/g,""));
+  return rows.map(r=>Object.fromEntries(headers.map((h,i)=>[h,(r[i]||"").trim()])));
+}
+function normalizeType(value){
+  const t=(value||"job").toLowerCase().trim();
+  if(t.includes("intern")) return "internship";
+  if(t.includes("walk")) return "walk-in";
+  return "job";
+}
+function safeText(value){return String(value||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function renderJobs(targetId, jobs){
+  const target=$(targetId);
+  if(!jobs.length){target.innerHTML='<div class="empty">No opportunities found right now. Please check again soon.</div>';return;}
+  target.innerHTML=jobs.map(job=>{
+    const skills=(job.skills||"").split(/[;,|]/).map(s=>s.trim()).filter(Boolean);
+    const apply=(job.applylink||job.apply_link||job.applyurl||"").trim();
+    const linkOk=/^https?:\/\//i.test(apply);
+    return `<article class="job-card">
+      <div>
+        <span class="job-type">${safeText(normalizeType(job.type))}</span>
+        <h3>${safeText(job.title||"Untitled opportunity")}</h3>
+        <p class="description">${safeText(job.description||"More details will be shared soon.")}</p>
+        <div class="meta">${job.company?`<span>${safeText(job.company)}</span>`:""}${job.location?`<span>⌖ ${safeText(job.location)}</span>`:""}${job.deadline?`<span>Deadline: ${safeText(job.deadline)}</span>`:""}</div>
+        ${skills.length?`<div class="skills">${skills.map(s=>`<span class="skill">${safeText(s)}</span>`).join("")}</div>`:""}
+      </div>
+      ${linkOk?`<a class="apply" href="${safeText(apply)}" target="_blank" rel="noopener noreferrer">APPLY NOW ↗</a>`:'<span class="result-count">Application link unavailable</span>'}
+    </article>`;
+  }).join("");
+}
+function filteredJobs(type=""){
+  const q=($("searchInput")?.value||"").toLowerCase().trim();
+  const location=$("locationFilter")?.value||"";
+  return allJobs.filter(j=>{
+    const hay=[j.title,j.description,j.skills,j.company,j.location].join(" ").toLowerCase();
+    return (!type||normalizeType(j.type)===type) && (!location||j.location===location) && (!q||hay.includes(q));
+  });
+}
+function updateHome(){
+  const jobs=filteredJobs($("typeFilter").value);
+  renderJobs("jobList",jobs);
+  $("resultCount").textContent=`${jobs.length} opportunity${jobs.length===1?"":"ies"}`;
+}
+function populateLocations(){
+  const select=$("locationFilter"), current=select.value;
+  const locations=[...new Set(allJobs.map(j=>j.location).filter(Boolean))].sort();
+  select.innerHTML='<option value="">All locations</option>'+locations.map(l=>`<option value="${safeText(l)}">${safeText(l)}</option>`).join("");
+  select.value=locations.includes(current)?current:"";
+}
+async function loadJobs(){
+  if(!JOBS_CSV_URL.startsWith("https://")) {
+    allJobs=[];
+    $("jobList").innerHTML='<div class="empty">Connect your Google Sheet by adding its published CSV URL to <b>JOBS_CSV_URL</b> in this file.</div>';
+    $("resultCount").textContent="Sheet not connected";
+    ["internshipList","jobsOnlyList","walkinsList"].forEach(id=>$(id).innerHTML='<div class="empty">Connect the Google Sheet to display listings.</div>');
+    return;
+  }
+  try{
+    const response=await fetch(JOBS_CSV_URL,{cache:"no-store"});
+    if(!response.ok) throw new Error("Google Sheets returned "+response.status);
+    allJobs=csvToRows(await response.text()).filter(j=>j.title);
+    populateLocations(); updateHome();
+    const internships=allJobs.filter(j=>normalizeType(j.type)==="internship");
+    const jobs=allJobs.filter(j=>normalizeType(j.type)==="job");
+    const walkins=allJobs.filter(j=>normalizeType(j.type)==="walk-in");
+    renderJobs("internshipList",internships); renderJobs("jobsOnlyList",jobs); renderJobs("walkinsList",walkins);
+    $("internshipCount").textContent=`${internships.length} listing(s)`;
+    $("jobsCount").textContent=`${jobs.length} listing(s)`;
+    $("walkinsCount").textContent=`${walkins.length} listing(s)`;
+  }catch(error){
+    $("jobList").innerHTML='<div class="error">Could not load the Google Sheet. Check that the CSV link is published and accessible.</div>';
+    console.error(error);
+  }
+}
+function showPage(page){
+  document.querySelectorAll(".page").forEach(el=>el.classList.add("hidden"));
+  const target=$(page+"Page"); if(target) target.classList.remove("hidden");
+  document.querySelectorAll(".nav-btn").forEach(btn=>btn.classList.toggle("active",btn.dataset.page===page));
+  if(location.hash!=="#"+page) history.replaceState(null,"","#"+page);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll(".nav-btn").forEach(btn=>btn.addEventListener("click",()=>showPage(btn.dataset.page)));
+window.addEventListener("hashchange",()=>showPage(location.hash.slice(1)||"home"));
+$("searchInput").addEventListener("input",updateHome);
+$("locationFilter").addEventListener("change",updateHome);
+$("typeFilter").addEventListener("change",updateHome);
+$("clearFilters").addEventListener("click",()=>{$("searchInput").value="";$("locationFilter").value="";$("typeFilter").value="";updateHome();});
+$("year").textContent=new Date().getFullYear();
+showPage(location.hash.slice(1)||"home");
+loadJobs();
+setInterval(loadJobs, 5 * 60 * 1000); // Refresh spreadsheet listings every five minutes.
+
+/* JSONP lets the static GitHub Pages site read the shared counter
+   without needing a server or permissive browser CORS settings. */
+window.gshCounterCallback=function(data){
+  if(data && typeof data.count==="number") $("visitorCount").textContent=data.count.toLocaleString();
+  else $("visitorCount").textContent="—";
+};
+if(COUNTER_SCRIPT_URL.startsWith("https://")){
+  const script=document.createElement("script");
+  script.src=COUNTER_SCRIPT_URL+"?callback=gshCounterCallback&t="+Date.now();
+  script.onerror=()=>$("visitorCount").textContent="—";
+  document.head.appendChild(script);
+}else{
+  $("visitorCount").textContent="SETUP";
+}
+</script>
+</body>
+</html>
