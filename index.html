@@ -268,8 +268,8 @@ function filteredJobs(type=""){
 function updateHome(){
   const jobs=filteredJobs($("typeFilter").value);
   renderJobs("jobList",jobs);
-  $("resultCount").textContent=`${jobs.length} opportunity${jobs.length===1?"":"ies"}`;
-}
+$("resultCount").textContent =
+  `${jobs.length} ${jobs.length === 1 ? "opportunity" : "opportunities"}`;}
 function populateLocations(){
   const select=$("locationFilter"), current=select.value;
   const locations=[...new Set(allJobs.map(j=>j.location).filter(Boolean))].sort();
