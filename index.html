@@ -243,7 +243,7 @@ function renderJobs(targetId, jobs){
   if(!jobs.length){target.innerHTML='<div class="empty">No opportunities found right now. Please check again soon.</div>';return;}
   target.innerHTML=jobs.map(job=>{
     const skills=(job.skills||"").split(/[;,|]/).map(s=>s.trim()).filter(Boolean);
-    const apply=(job.applylink||job.apply_link||job.applyurl||"").trim();
+    const apply=(job.applyLink||job.applylink||job.apply_link||job.applyurl||"").trim();    
     const linkOk=/^https?:\/\//i.test(apply);
     return `<article class="job-card">
       <div>
@@ -276,31 +276,58 @@ function populateLocations(){
   select.innerHTML='<option value="">All locations</option>'+locations.map(l=>`<option value="${safeText(l)}">${safeText(l)}</option>`).join("");
   select.value=locations.includes(current)?current:"";
 }
+
 async function loadJobs() {
-    try {
-        const response = await fetch(`${GSH_API}/?sheet=jobs`);
+  try {
+    const response = await fetch(`${GSH_API}/?sheet=jobs`, {
+      cache: "no-store"
+    });
 
-        if (!response.ok) {
-            throw new Error("Unable to load jobs");
-        }
-
-        const result = await response.json();
-
-        if (!result.success) {
-            throw new Error("Jobs API failed");
-        }
-
-        const jobs = result.data;
-
-        // Pass jobs to your existing job rendering function here.
-        renderJobs(jobs);
-
-    } catch (error) {
-        console.error("Jobs loading error:", error);
+    if (!response.ok) {
+      throw new Error("Unable to load jobs");
     }
+
+    const result = await response.json();
+
+    if (!result.success || !Array.isArray(result.data)) {
+      throw new Error("Invalid Jobs API response");
+    }
+
+    // Store all jobs for filtering
+    allJobs = result.data;
+
+    // Update location filter
+    populateLocations();
+
+    // Update homepage listings
+    updateHome();
+
+    // Update separate listing pages
+    const internships = filteredJobs("internship");
+    const jobs = filteredJobs("job");
+    const walkins = filteredJobs("walk-in");
+
+    renderJobs("internshipList", internships);
+    renderJobs("jobsOnlyList", jobs);
+    renderJobs("walkinsList", walkins);
+
+    // Update listing counts
+    $("internshipCount").textContent =
+      `${internships.length} internships`;
+
+    $("jobsCount").textContent =
+      `${jobs.length} jobs`;
+
+    $("walkinsCount").textContent =
+      `${walkins.length} walk-in opportunities`;
+
+  } catch (error) {
+    console.error("Jobs loading error:", error);
+    $("jobList").innerHTML =
+      '<div class="error">Unable to load opportunities. Please try again later.</div>';
+  }
 }
 
-loadJobs();
 function showPage(page){
   document.querySelectorAll(".page").forEach(el=>el.classList.add("hidden"));
   const target=$(page+"Page"); if(target) target.classList.remove("hidden");
