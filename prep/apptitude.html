@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#09090f">
+  <link rel="icon" type="image/png"
+      href="../img/GSH Get Set Hired Logo.png" class="site-logo">
   <title>GSH | Aptitude Preparation</title>
   <style>
     :root{--bg:#09090f;--surface:#12121c;--surface2:#191927;--line:#29293a;--text:#f7f7fb;--muted:#a4a4b5;--purple:#963cff;}
@@ -34,6 +36,12 @@
     .content{font-size:14px;line-height:1.8;color:#dedee8;white-space:pre-wrap;overflow-wrap:anywhere}
     .content a{color:#c58aff;text-decoration:underline}
     .status{color:var(--muted);font-size:13px;line-height:1.6}
+    .site-logo {
+  width: 150px;
+  height: 55px;
+  object-fit: contain;
+  display: block;
+}
     footer{border-top:1px solid var(--line);padding:20px 0;color:#777789;font-size:11px}
     @media(max-width:700px){.workspace{grid-template-columns:1fr;min-height:0}.topic-list{grid-template-columns:1fr 1fr}.viewer{min-height:300px}}
     @media(max-width:430px){.topic-list{grid-template-columns:1fr}.brand-name{font-size:12px}}
@@ -42,9 +50,15 @@
 <body>
 <header>
   <div class="shell topbar">
-    <a class="brand" href="index.html"><span class="mark">G<span>S</span>H</span><span class="brand-name">GET SET<small>HIRED</small></span></a>
-    <a class="back" href="index.html">← Career site</a>
-  </div>
+  <a class="brand" href="../index.html">
+    <img
+      src="../img/GSH%20Get%20Set%20Hired%20Logo.png"
+      alt="Get Set Hired"
+      class="site-logo">
+  </a>
+
+  <a class="back" href="../index.html">← Career site</a>
+</div>
 </header>
 <main class="shell">
   <div class="heading">
@@ -69,7 +83,8 @@
    Required columns: topic, content
    Optional column: order (numeric; controls topic order)
 */
-const TOPICS_CSV_URL = "PASTE_THIS_PAGE_PUBLISHED_GOOGLE_SHEET_CSV_URL_HERE";
+const GSH_API = "https://gsh-content-api.rajinikanthkakarla-03.workers.dev";
+const SHEET_NAME = "aptitude";
 const $ = id => document.getElementById(id);
 $("year").textContent = new Date().getFullYear();
 
@@ -102,38 +117,72 @@ function showTopic(item, button) {
   $("topicContent").textContent = item.content || "Content will be added soon.";
 }
 async function loadTopics() {
-  if(!TOPICS_CSV_URL.startsWith("https://")) {
-    $("topicList").innerHTML='<div class="status">Add this page’s published CSV URL to TOPICS_CSV_URL in this file.</div>';
-    $("topicContent").textContent="Google Sheets is not connected yet.";
-    return;
-  }
   try {
-    const response=await fetch(TOPICS_CSV_URL,{cache:"no-store"});
-    if(!response.ok) throw new Error("Could not load the published sheet.");
-    const topics=parseCSV(await response.text())
-      .filter(x=>x.topic && x.content)
-      .sort((a,b)=>(Number(a.order)||9999)-(Number(b.order)||9999));
-    if(!topics.length) {
-      $("topicList").innerHTML='<div class="status">No topics found. Add rows with topic and content columns.</div>';
+    const response = await fetch(
+      `${GSH_API}/?sheet=${SHEET_NAME}`,
+      { cache: "no-store" }
+    );
+
+    if (!response.ok) {
+      throw new Error("Could not load preparation content.");
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error("Google Sheets connection failed.");
+    }
+
+    const topics = result.data
+      .filter(x => x.topic && x.content)
+      .sort((a, b) =>
+        (Number(a.order) || 9999) -
+        (Number(b.order) || 9999)
+      );
+
+    if (!topics.length) {
+      $("topicList").innerHTML =
+        '<div class="status">No topics found. Add topics in Google Sheets.</div>';
+
+      $("topicContent").textContent =
+        "Preparation content will appear here.";
+
       return;
     }
-    $("topicList").innerHTML="";
-    topics.forEach((item,index)=>{
-      const button=document.createElement("button");
-      button.className="topic";
-      button.type="button";
-      button.textContent=item.topic;
-      button.addEventListener("click",()=>showTopic(item,button));
+
+    $("topicList").innerHTML = "";
+
+    topics.forEach((item, index) => {
+      const button = document.createElement("button");
+
+      button.className = "topic";
+      button.type = "button";
+      button.textContent = item.topic;
+
+      button.addEventListener("click", () => {
+        showTopic(item, button);
+      });
+
       $("topicList").appendChild(button);
-      if(index===0) showTopic(item,button);
+
+      if (index === 0) {
+        showTopic(item, button);
+      }
     });
-  } catch(error) {
-    $("topicList").innerHTML='<div class="status">Unable to load topics. Check the published CSV URL and sharing settings.</div>';
-    $("topicContent").textContent=error.message;
+
+  } catch (error) {
+    console.error("Preparation loading error:", error);
+
+    $("topicList").innerHTML =
+      '<div class="status">Unable to load topics. Please try again later.</div>';
+
+    $("topicContent").textContent = error.message;
   }
 }
+
 loadTopics();
-setInterval(loadTopics,5*60*1000);
+
+setInterval(loadTopics, 5 * 60 * 1000);
 </script>
 </body>
 </html>

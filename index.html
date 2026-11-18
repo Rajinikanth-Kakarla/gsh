@@ -207,7 +207,7 @@
    Optional: deadline
    type should be: job, internship, or walk-in
 ================================================================ */
-const JOBS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQv4nsIIPpxot6UVsdzmAWAmXA9iMmTDrOJla6Tf_e0CKn9UqkZrO5dLw7u-LdaIUHI7ieOjj7l7v77/pub?gid=0&single=true&output=csv";
+const GSH_API = "https://gsh-content-api.rajinikanthkakarla-03.workers.dev";
 const COUNTER_SCRIPT_URL =
 "https://script.google.com/macros/s/AKfycbzCcRki175ohEQ9vNnKnRJtJyssrzWXuNA8M1s8E1Wvp-30hZjFef1PbQboGlTz9DZGqw/exec";
 let allJobs = [];
@@ -276,31 +276,31 @@ function populateLocations(){
   select.innerHTML='<option value="">All locations</option>'+locations.map(l=>`<option value="${safeText(l)}">${safeText(l)}</option>`).join("");
   select.value=locations.includes(current)?current:"";
 }
-async function loadJobs(){
-  if(!JOBS_CSV_URL.startsWith("https://")) {
-    allJobs=[];
-    $("jobList").innerHTML='<div class="empty">Connect your Google Sheet by adding its published CSV URL to <b>JOBS_CSV_URL</b> in this file.</div>';
-    $("resultCount").textContent="Sheet not connected";
-    ["internshipList","jobsOnlyList","walkinsList"].forEach(id=>$(id).innerHTML='<div class="empty">Connect the Google Sheet to display listings.</div>');
-    return;
-  }
-  try{
-    const response=await fetch(JOBS_CSV_URL,{cache:"no-store"});
-    if(!response.ok) throw new Error("Google Sheets returned "+response.status);
-    allJobs=csvToRows(await response.text()).filter(j=>j.title);
-    populateLocations(); updateHome();
-    const internships=allJobs.filter(j=>normalizeType(j.type)==="internship");
-    const jobs=allJobs.filter(j=>normalizeType(j.type)==="job");
-    const walkins=allJobs.filter(j=>normalizeType(j.type)==="walk-in");
-    renderJobs("internshipList",internships); renderJobs("jobsOnlyList",jobs); renderJobs("walkinsList",walkins);
-    $("internshipCount").textContent=`${internships.length} listing(s)`;
-    $("jobsCount").textContent=`${jobs.length} listing(s)`;
-    $("walkinsCount").textContent=`${walkins.length} listing(s)`;
-  }catch(error){
-    $("jobList").innerHTML='<div class="error">Could not load the Google Sheet. Check that the CSV link is published and accessible.</div>';
-    console.error(error);
-  }
+async function loadJobs() {
+    try {
+        const response = await fetch(`${GSH_API}/?sheet=jobs`);
+
+        if (!response.ok) {
+            throw new Error("Unable to load jobs");
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error("Jobs API failed");
+        }
+
+        const jobs = result.data;
+
+        // Pass jobs to your existing job rendering function here.
+        renderJobs(jobs);
+
+    } catch (error) {
+        console.error("Jobs loading error:", error);
+    }
 }
+
+loadJobs();
 function showPage(page){
   document.querySelectorAll(".page").forEach(el=>el.classList.add("hidden"));
   const target=$(page+"Page"); if(target) target.classList.remove("hidden");
