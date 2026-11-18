@@ -108,8 +108,11 @@
       <button class="nav-btn" data-page="walkins">WALK-INS</button>
       <button class="nav-btn" data-page="prep">PREP CONTENT</button>
     </nav>
-    <div class="counter">VISITOR COUNT: <strong id="visitorCount">—</strong></div>
-  </div>
+<div class="counter">
+  TOTAL VISITS: <strong id="visitorCount">0</strong>
+  &nbsp; | &nbsp;
+  ONLINE: <strong id="onlineCount">0</strong>
+</div>  </div>
 </header>
 
 <main class="shell">
@@ -178,8 +181,8 @@
    type should be: job, internship, or walk-in
 ================================================================ */
 const JOBS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQv4nsIIPpxot6UVsdzmAWAmXA9iMmTDrOJla6Tf_e0CKn9UqkZrO5dLw7u-LdaIUHI7ieOjj7l7v77/pub?gid=0&single=true&output=csv";
-const COUNTER_SCRIPT_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
-
+const COUNTER_SCRIPT_URL =
+"https://script.google.com/macros/s/AKfycbzCcRki175ohEQ9vNnKnRJtJyssrzWXuNA8M1s8E1Wvp-30hZjFef1PbQboGlTz9DZGqw/exec";
 let allJobs = [];
 const $ = (id) => document.getElementById(id);
 
@@ -291,18 +294,51 @@ setInterval(loadJobs, 5 * 60 * 1000); // Refresh spreadsheet listings every five
 
 /* JSONP lets the static GitHub Pages site read the shared counter
    without needing a server or permissive browser CORS settings. */
-window.gshCounterCallback=function(data){
-  if(data && typeof data.count==="number") $("visitorCount").textContent=data.count.toLocaleString();
-  else $("visitorCount").textContent="—";
-};
-if(COUNTER_SCRIPT_URL.startsWith("https://")){
-  const script=document.createElement("script");
-  script.src=COUNTER_SCRIPT_URL+"?callback=gshCounterCallback&t="+Date.now();
-  script.onerror=()=>$("visitorCount").textContent="—";
-  document.head.appendChild(script);
-}else{
-  $("visitorCount").textContent="SETUP";
+
+let visitorSession = sessionStorage.getItem("gsh_session");
+
+if (!visitorSession) {
+  visitorSession = crypto.randomUUID();
+  sessionStorage.setItem("gsh_session", visitorSession);
 }
+
+let requestId = 0;
+
+function updateCounter(action) {
+  const callback = "gshCallback" + (++requestId);
+  const script = document.createElement("script");
+
+  window[callback] = function(data) {
+    if (data && typeof data.total === "number") {
+      $("visitorCount").textContent = data.total.toLocaleString();
+      $("onlineCount").textContent = data.online.toLocaleString();
+    }
+
+    delete window[callback];
+    script.remove();
+  };
+
+  script.onerror = function() {
+    delete window[callback];
+    script.remove();
+  };
+
+  const params = new URLSearchParams({
+    action: action,
+    session: visitorSession,
+    callback: callback
+  });
+
+  script.src = COUNTER_SCRIPT_URL + "?" + params.toString();
+  document.head.appendChild(script);
+}
+
+updateCounter("visit");
+
+setInterval(() => {
+  updateCounter("heartbeat");
+}, 20000);
+
 </script>
 </body>
 </html>
