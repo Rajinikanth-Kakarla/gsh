@@ -104,6 +104,101 @@
 .prep-card {
   cursor: pointer;
 }
+/* Post a Job and Report pages */
+
+.postjob-container,
+.report-container {
+  max-width: 720px;
+  margin: 35px auto;
+  padding: 30px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.qr-code {
+  width: 280px;
+  max-width: 100%;
+  background: white;
+  padding: 15px;
+  border-radius: 15px;
+  margin: 25px auto;
+  display: block;
+}
+
+.form-link {
+  display: inline-block;
+  margin-top: 15px;
+  color: #c58aff;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.report-form {
+  display: grid;
+  gap: 14px;
+  text-align: left;
+  margin-top: 25px;
+}
+
+.report-form label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.report-form input,
+.report-form select,
+.report-form textarea {
+  width: 100%;
+  background: #0d0d15;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 13px;
+  color: white;
+  margin-top: 7px;
+}
+
+.report-form textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+.report-form button {
+  background: var(--purple);
+  color: white;
+  border: 0;
+  border-radius: 10px;
+  padding: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.report-form button:hover {
+  background: var(--purple-2);
+}
+
+.job-extra {
+  margin-top: 12px;
+  color: #c9c9d8;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.job-extra strong {
+  color: #c58aff;
+}
+
+@media(max-width:600px) {
+  .postjob-container,
+  .report-container {
+    padding: 20px;
+  }
+
+  .qr-code {
+    width: 240px;
+  }
+}
   </style>
 </head>
 <body>
@@ -113,12 +208,11 @@
       <img src="img/GSH Get Set Hired Logo.png" alt="gsh" srcset="" height=95px width=95px>
     </a>
     <nav aria-label="Main navigation">
-      <button class="nav-btn active" data-page="home">HOME</button>
-      <button class="nav-btn" data-page="internships">INTERNSHIPS</button>
-      <button class="nav-btn" data-page="jobs">JOBS</button>
-      <button class="nav-btn" data-page="walkins">WALK-INS</button>
-      <button class="nav-btn" data-page="prep">PREP CONTENT</button>
-    </nav>
+  <button class="nav-btn active" data-page="home">HOME</button>
+  <button class="nav-btn" data-page="prep">PREP CONTENT</button>
+  <button class="nav-btn" data-page="postjob">POST A JOB</button>
+  <button class="nav-btn" data-page="report">REPORT AN ISSUE</button>
+</nav>
 <div class="counter">
   TOTAL VISITS: <strong id="visitorCount">Loading...</strong>
   |
@@ -150,7 +244,7 @@
     <div class="section-row"><h2>Latest opportunities</h2><span class="result-count" id="resultCount">Loading listings…</span></div>
     <div id="jobList" class="job-list"><div class="loading">Loading opportunities from Google Sheets…</div></div>
   </section>
-
+<!--
   <section id="internshipsPage" class="page hidden">
     <div class="hero"><div><div class="eyebrow">Start building experience</div><h1>Explore <span>internships.</span></h1><p class="sub">Discover internship opportunities and take the next step in your career.</p></div></div>
     <div class="section-row"><h2>Internship listings</h2><span class="result-count" id="internshipCount"></span></div>
@@ -167,7 +261,7 @@
     <div class="hero"><div><div class="eyebrow">Meet employers directly</div><h1>Walk-in <span>opportunities.</span></h1><p class="sub">Find walk-in interviews and hiring events. Check each listing for the latest venue and timing.</p></div></div>
     <div class="section-row"><h2>Upcoming walk-ins</h2><span class="result-count" id="walkinsCount"></span></div>
     <div id="walkinsList" class="job-list"><div class="loading">Loading walk-ins…</div></div>
-  </section>
+  </section>-->
 
   <section id="prepPage" class="page hidden">
     <div class="hero"><div><div class="eyebrow">Prepare with confidence</div><h1>Get ready to <span>stand out.</span></h1><p class="sub">Use these preparation areas to structure your learning and interview practice.</p></div></div>
@@ -193,6 +287,160 @@
   </article>
 </div>
   </section>
+
+<section id="postjobPage" class="page hidden">
+
+  <div class="hero">
+    <div>
+      <div class="eyebrow">Help someone find their next opportunity</div>
+      <h1>Post a <span>Job.</span></h1>
+      <p class="sub">
+        Share genuine job openings, internships and walk-in opportunities
+        with the GSH community.
+      </p>
+    </div>
+  </div>
+
+  <div class="postjob-container">
+
+    <h2>Share an Opportunity. Shape Someone's Future!</h2>
+
+    <p class="sub" style="margin:auto">
+      Scan the QR code below to submit an opportunity through our
+      Google Form.
+    </p>
+
+    <img
+      class="qr-code"
+      src="https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=https%3A%2F%2Fdocs.google.com%2Fforms%2Fd%2Fe%2F1FAIpQLSfaVQZznSX6dJ0IvKWgglIxm9jKJq6P2MQ6TXeIteat8ycAAQ%2Fviewform"
+      alt="GSH Job Submission QR Code"
+    >
+
+    <p style="color:var(--muted);font-size:13px">
+      Anyone can share a genuine job, internship or walk-in opportunity.
+    </p>
+
+    <a
+      class="form-link"
+      href="https://docs.google.com/forms/d/e/1FAIpQLSfaVQZznSX6dJ0IvKWgglIxm9jKJq6P2MQ6TXeIteat8ycAAQ/viewform"
+      target="_blank"
+      rel="noopener noreferrer">
+      Open Job Submission Form ↗
+    </a>
+
+    <p class="job-extra">
+      Please provide accurate information and a valid application link.
+      Listings are automatically displayed and expire after seven days.
+    </p>
+
+  </div>
+</section>
+
+
+
+<section id="reportPage" class="page hidden">
+
+  <div class="hero">
+    <div>
+      <div class="eyebrow">Help us improve GSH</div>
+      <h1>Report an <span>Issue.</span></h1>
+      <p class="sub">
+        Found an incorrect job listing, broken application link,
+        or website issue? Let us know so we can improve your experience.
+      </p>
+    </div>
+  </div>
+
+  <div class="report-container">
+
+    <h2>Let's Connect</h2>
+
+    <p class="sub" style="margin:auto">
+      Every report helps us make GSH better for everyone.
+    </p>
+
+    <form
+      class="report-form"
+      action="https://api.web3forms.com/submit"
+      method="POST">
+
+      <input
+        type="hidden"
+        name="access_key"
+        value="f8df17fc-8ba8-4233-9ae7-96b6d620ef3d">
+
+      <input
+        type="hidden"
+        name="subject"
+        value="New GSH Website Issue Report">
+
+      <input
+        type="hidden"
+        name="from_name"
+        value="GSH - Get Set Hired">
+
+      <input
+        type="hidden"
+        name="redirect"
+        value="https://www.gshcareers.site/?report=success">
+
+      <div>
+        <label for="reportName">Name</label>
+        <input
+          type="text"
+          id="reportName"
+          name="name"
+          placeholder="Enter your name"
+          required>
+      </div>
+
+      <div>
+        <label for="reportEmail">Email</label>
+        <input
+          type="email"
+          id="reportEmail"
+          name="email"
+          placeholder="Enter your email"
+          required>
+      </div>
+
+      <div>
+        <label for="reportCategory">Report Category</label>
+        <select
+          id="reportCategory"
+          name="category"
+          required>
+          <option value="">Select an issue</option>
+          <option>Incorrect Job Information</option>
+          <option>Broken Application Link</option>
+          <option>Expired Opportunity</option>
+          <option>Website Bug</option>
+          <option>Incorrect Internship Information</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="reportMessage">Message</label>
+        <textarea
+          id="reportMessage"
+          name="message"
+          placeholder="Describe the issue you encountered..."
+          required></textarea>
+      </div>
+
+      <button type="submit">SUBMIT REPORT ↗</button>
+
+      <p style="text-align:center;color:var(--muted);font-size:11px">
+        Powered by Web3Forms
+      </p>
+
+    </form>
+
+  </div>
+
+</section>
+
 </main>
 
 <footer><div class="shell footer-inner"><span>© <span id="year"></span> GSH — Get Set Hired</span><span>Opportunities to help you move forward.</span></div></footer>
@@ -238,25 +486,115 @@ function normalizeType(value){
   return "job";
 }
 function safeText(value){return String(value||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function renderJobs(targetId, jobs){
-  const target=$(targetId);
-  if(!jobs.length){target.innerHTML='<div class="empty">No opportunities found right now. Please check again soon.</div>';return;}
-  target.innerHTML=jobs.map(job=>{
-    const skills=(job.skills||"").split(/[;,|]/).map(s=>s.trim()).filter(Boolean);
-    const apply=(job.applyLink||job.applylink||job.apply_link||job.applyurl||"").trim();    
-    const linkOk=/^https?:\/\//i.test(apply);
-    return `<article class="job-card">
-      <div>
-        <span class="job-type">${safeText(normalizeType(job.type))}</span>
-        <h3>${safeText(job.title||"Untitled opportunity")}</h3>
-        <p class="description">${safeText(job.description||"More details will be shared soon.")}</p>
-        <div class="meta">${job.company?`<span>${safeText(job.company)}</span>`:""}${job.location?`<span>⌖ ${safeText(job.location)}</span>`:""}${job.deadline?`<span>Deadline: ${safeText(job.deadline)}</span>`:""}</div>
-        ${skills.length?`<div class="skills">${skills.map(s=>`<span class="skill">${safeText(s)}</span>`).join("")}</div>`:""}
-      </div>
-      ${linkOk?`<a class="apply" href="${safeText(apply)}" target="_blank" rel="noopener noreferrer">APPLY NOW ↗</a>`:'<span class="result-count">Application link unavailable</span>'}
-    </article>`;
+
+function renderJobs(targetId, jobs) {
+  const target = $(targetId);
+
+  if (!jobs.length) {
+    target.innerHTML =
+      '<div class="empty">No opportunities found right now. Please check again soon.</div>';
+    return;
+  }
+
+  target.innerHTML = jobs.map(job => {
+    const skills = (job.skills || "")
+      .split(/[;,|]/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const mustHaveSkills = (job.mustHaveSkills || "")
+      .split(/[;,|]/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const apply = (
+      job.applyLink ||
+      job.applylink ||
+      job.apply_link ||
+      job.applyurl ||
+      ""
+    ).trim();
+
+    const linkOk = /^https?:\/\//i.test(apply);
+
+    return `
+      <article class="job-card">
+
+        <div>
+          <span class="job-type">
+            ${safeText(normalizeType(job.type))}
+          </span>
+
+          <h3>${safeText(job.title || "Untitled opportunity")}</h3>
+
+          <p class="description">
+            ${safeText(job.description || "More details will be shared soon.")}
+          </p>
+
+          <div class="meta">
+            ${job.company
+              ? `<span>${safeText(job.company)}</span>`
+              : ""}
+
+            ${job.location
+              ? `<span>⌖ ${safeText(job.location)}</span>`
+              : ""}
+
+            ${job.deadline
+              ? `<span>Deadline: ${safeText(job.deadline)}</span>`
+              : ""}
+          </div>
+
+          <div class="job-extra">
+            ${job.workMode
+              ? `<span><strong>Work Mode:</strong> ${safeText(job.workMode)}</span>`
+              : ""}
+
+            ${job.experience
+              ? `<span><strong>Experience:</strong> ${safeText(job.experience)}</span>`
+              : ""}
+
+            ${job.minimumSkillsRequired
+              ? `<span><strong>Minimum Skills Required:</strong> ${safeText(job.minimumSkillsRequired)}</span>`
+              : ""}
+          </div>
+
+          ${mustHaveSkills.length
+            ? `
+              <div class="skills">
+                ${mustHaveSkills.map(skill =>
+                  `<span class="skill">${safeText(skill)}</span>`
+                ).join("")}
+              </div>
+            `
+            : ""}
+
+          ${skills.length
+            ? `
+              <div class="skills">
+                ${skills.map(skill =>
+                  `<span class="skill">${safeText(skill)}</span>`
+                ).join("")}
+              </div>
+            `
+            : ""}
+
+        </div>
+
+        ${linkOk
+          ? `<a class="apply"
+                href="${safeText(apply)}"
+                target="_blank"
+                rel="noopener noreferrer">
+                APPLY NOW ↗
+             </a>`
+          : '<span class="result-count">Application link unavailable</span>'}
+
+      </article>
+    `;
   }).join("");
 }
+
 function filteredJobs(type=""){
   const q=($("searchInput")?.value||"").toLowerCase().trim();
   const location=$("locationFilter")?.value||"";
