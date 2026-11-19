@@ -499,7 +499,7 @@ function renderJobs(targetId, jobs) {
 
   target.innerHTML = jobs.map(job => {
 
-    // Must-have skills
+    // Must-have skills list
     const mustHaveSkills = (job.mustHaveSkills || "")
       .split(/[;,|]/)
       .map(s => s.trim())
@@ -515,15 +515,6 @@ function renderJobs(targetId, jobs) {
     ).trim();
 
     const linkOk = /^https?:\/\//i.test(apply);
-
-    // Experience range
-    const minExperience = job.minimumExperience || "";
-    const maxExperience = job.maximumExperience || "";
-
-    const experienceRange =
-      minExperience || maxExperience
-        ? `${minExperience || "Not specified"} – ${maxExperience || "Not specified"}`
-        : "";
 
     return `
       <article class="job-card">
@@ -562,8 +553,12 @@ function renderJobs(targetId, jobs) {
               ? `<div><strong>Work Mode:</strong> ${safeText(job.workMode)}</div>`
               : ""}
 
-            ${experienceRange
-              ? `<div><strong>Experience:</strong> ${safeText(experienceRange)} years</div>`
+            ${job.experience
+              ? `<div><strong>Experience Required:</strong> ${safeText(job.experience)}</div>`
+              : ""}
+
+            ${job.minimumSkillsRequired
+              ? `<div><strong>Minimum Skills Required:</strong> ${safeText(job.minimumSkillsRequired)}</div>`
               : ""}
 
           </div>
@@ -603,6 +598,7 @@ function renderJobs(targetId, jobs) {
 
   }).join("");
 }
+
 
 function filteredJobs(type=""){
   const q=($("searchInput")?.value||"").toLowerCase().trim();
