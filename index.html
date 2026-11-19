@@ -487,6 +487,7 @@ function normalizeType(value){
 }
 function safeText(value){return String(value||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
+
 function renderJobs(targetId, jobs) {
   const target = $(targetId);
 
@@ -497,16 +498,14 @@ function renderJobs(targetId, jobs) {
   }
 
   target.innerHTML = jobs.map(job => {
-    const skills = (job.skills || "")
-      .split(/[;,|]/)
-      .map(s => s.trim())
-      .filter(Boolean);
 
+    // Must-have skills
     const mustHaveSkills = (job.mustHaveSkills || "")
       .split(/[;,|]/)
       .map(s => s.trim())
       .filter(Boolean);
 
+    // Application link
     const apply = (
       job.applyLink ||
       job.applylink ||
@@ -517,10 +516,20 @@ function renderJobs(targetId, jobs) {
 
     const linkOk = /^https?:\/\//i.test(apply);
 
+    // Experience range
+    const minExperience = job.minimumExperience || "";
+    const maxExperience = job.maximumExperience || "";
+
+    const experienceRange =
+      minExperience || maxExperience
+        ? `${minExperience || "Not specified"} – ${maxExperience || "Not specified"}`
+        : "";
+
     return `
       <article class="job-card">
 
         <div>
+
           <span class="job-type">
             ${safeText(normalizeType(job.type))}
           </span>
@@ -532,6 +541,7 @@ function renderJobs(targetId, jobs) {
           </p>
 
           <div class="meta">
+
             ${job.company
               ? `<span>${safeText(job.company)}</span>`
               : ""}
@@ -543,38 +553,30 @@ function renderJobs(targetId, jobs) {
             ${job.deadline
               ? `<span>Deadline: ${safeText(job.deadline)}</span>`
               : ""}
+
           </div>
 
           <div class="job-extra">
+
             ${job.workMode
-              ? `<span><strong>Work Mode:</strong> ${safeText(job.workMode)}</span>`
+              ? `<div><strong>Work Mode:</strong> ${safeText(job.workMode)}</div>`
               : ""}
 
-            ${job.experience
-              ? `<span><strong>Experience:</strong> ${safeText(job.experience)}</span>`
+            ${experienceRange
+              ? `<div><strong>Experience:</strong> ${safeText(experienceRange)} years</div>`
               : ""}
 
-            ${job.minimumSkillsRequired
-              ? `<span><strong>Minimum Skills Required:</strong> ${safeText(job.minimumSkillsRequired)}</span>`
-              : ""}
           </div>
 
           ${mustHaveSkills.length
             ? `
               <div class="skills">
+                <strong style="width:100%">Must-Have Skills</strong>
+
                 ${mustHaveSkills.map(skill =>
                   `<span class="skill">${safeText(skill)}</span>`
                 ).join("")}
-              </div>
-            `
-            : ""}
 
-          ${skills.length
-            ? `
-              <div class="skills">
-                ${skills.map(skill =>
-                  `<span class="skill">${safeText(skill)}</span>`
-                ).join("")}
               </div>
             `
             : ""}
@@ -582,16 +584,23 @@ function renderJobs(targetId, jobs) {
         </div>
 
         ${linkOk
-          ? `<a class="apply"
-                href="${safeText(apply)}"
-                target="_blank"
-                rel="noopener noreferrer">
-                APPLY NOW ↗
-             </a>`
-          : '<span class="result-count">Application link unavailable</span>'}
+          ? `
+            <a class="apply"
+               href="${safeText(apply)}"
+               target="_blank"
+               rel="noopener noreferrer">
+               APPLY NOW ↗
+            </a>
+          `
+          : `
+            <span class="result-count">
+              Application link unavailable
+            </span>
+          `}
 
       </article>
     `;
+
   }).join("");
 }
 
