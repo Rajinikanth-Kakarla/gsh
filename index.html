@@ -297,7 +297,8 @@
         <input id="searchInput" class="field" type="search" placeholder="Search job title, company or skill…">
         <select id="locationFilter" class="field"><option value="">All locations</option></select>
         <select id="typeFilter" class="field">
-          <option value="">All opportunities</option><option value="job">Jobs</option><option value="internship">Internships</option><option value="walk-in">Walk-ins</option>
+          <option value="">All opportunities</option><option value="job">Jobs</option><option value="internship">Internships</option><option value="walk-in">Walk-ins</option><option value="apprenticeship">Apprenticeships</option>
+
         </select>
       </div>
     </div>
@@ -591,6 +592,8 @@ function csvToRows(text) {
 function normalizeType(value){
   const t=(value||"job").toLowerCase().trim();
   if(t.includes("intern")) return "internship";
+  if (t.includes("apprent")) return "apprenticeship";
+
   if(t.includes("walk")) return "walk-in";
   return "job";
 }
