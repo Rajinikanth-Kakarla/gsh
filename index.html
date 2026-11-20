@@ -258,17 +258,6 @@
     align-items: flex-start;
   }
 }
-.job-card-info {
-  min-width: 0;
-}
-
-.job-card .meta {
-  line-height: 1.8;
-}
-
-.job-card .meta strong {
-  color: #c58aff;
-}
 
   </style>
 </head>
@@ -311,8 +300,7 @@
           <option value="">All opportunities</option>
           <option value="job">Jobs</option>
           <option value="internship">Internships</option>
-          <option value="walk-in">Walk-ins</option>
-          <option value="apprenticeship">Apprenticeships</option>
+          <option value="walk-in">Walk-ins</option><option value="apprenticeship">Apprenticeships</option>
 
         </select>
       </div>
@@ -604,13 +592,12 @@ function csvToRows(text) {
   const headers=rows.shift().map(h=>h.trim().toLowerCase().replace(/\s+/g,""));
   return rows.map(r=>Object.fromEntries(headers.map((h,i)=>[h,(r[i]||"").trim()])));
 }
-function normalizeType(value) {
-  const t = (value || "job").toLowerCase().trim();
-
-  if (t.includes("intern")) return "internship";
+function normalizeType(value){
+  const t=(value||"job").toLowerCase().trim();
+  if(t.includes("intern")) return "internship";
   if (t.includes("apprent")) return "apprenticeship";
-  if (t.includes("walk")) return "walk-in";
 
+  if(t.includes("walk")) return "walk-in";
   return "job";
 }
 function safeText(value){return String(value||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
@@ -626,65 +613,189 @@ function renderJobs(targetId, jobs) {
   }
 
   target.innerHTML = jobs.map(job => {
-    const jobId = String(job.jobId || "").trim();
 
-    const type = normalizeType(job.type)
-      .replace("-", " ")
-      .replace(/\b\w/g, char => char.toUpperCase());
+    // Must-have skills list
+    const mustHaveSkills = (job.mustHaveSkills || "")
+      .split(/[;,|]/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    // Application link
+    const apply = (
+      job.applyLink ||
+      job.applylink ||
+      job.apply_link ||
+      job.applyurl ||
+      ""
+    ).trim();
+
+    const linkOk = /^https?:\/\//i.test(apply);
 
     return `
       <article class="job-card">
 
-        <div class="job-card-info">
+        <div>
+
+          <span class="job-type">
+            ${safeText(normalizeType(job.type))}
+          </span>
 
           <h3>${safeText(job.title || "Untitled opportunity")}</h3>
 
+          <p class="description">
+            ${safeText(job.description || "More details will be shared soon.")}
+          </p>
+
           <div class="meta">
 
-            <span>
-              <strong>Company:</strong>
-              ${safeText(job.company || "Not specified")}
-            </span>
+            ${job.company
+              ? `<span>${safeText(job.company)}</span>`
+              : ""}
 
-            <span>
-              <strong>Location:</strong>
-              ${safeText(job.location || "Not specified")}
-            </span>
+            ${job.location
+              ? `<span>⌖ ${safeText(job.location)}</span>`
+              : ""}
 
-            <span>
-              <strong>Type:</strong>
-              ${safeText(type)}
-            </span>
-
-            <span>
-              <strong>Experience:</strong>
-              ${safeText(job.experience || "Not specified")}
-            </span>
+            ${job.deadline
+              ? `<span>Deadline: ${safeText(job.deadline)}</span>`
+              : ""}
 
           </div>
 
+          <div class="job-extra">
+
+            ${job.workMode
+              ? `<div><strong>Work Mode:</strong> ${safeText(job.workMode)}</div>`
+              : ""}
+
+            ${job.experience
+              ? `<div><strong>Experience Required:</strong> ${safeText(job.experience)}</div>`
+              : ""}
+
+            ${job.minimumSkillsRequired
+              ? `<div><strong>Minimum Skills Required:</strong> ${safeText(job.minimumSkillsRequired)}</div>`
+              : ""}
+
+          </div>
+
+          ${mustHaveSkills.length
+            ? `
+              <div class="skills">
+                <strong style="width:100%">Must-Have Skills</strong>
+
+                ${mustHaveSkills.map(skill =>
+                  `<span class="skill">${safeText(skill)}</span>`
+                ).join("")}
+
+              </div>
+            `
+            : ""}
+
         </div>
 
-        ${
-          jobId
-            ? `
-              <a
-                class="apply"
-                href="job.html?id=${encodeURIComponent(jobId)}">
-                VIEW DETAILS →
-              </a>
-            `
-            : `
-              <span class="result-count">
-                Job details unavailable
-              </span>
-            `
-        }
+        ${linkOk
+          ? `
+            <a class="apply"
+               href="${safeText(apply)}"
+               target="_blank"
+               rel="noopener noreferrer">
+               APPLY NOW ↗
+            </a>
+          `
+          : `
+            <span class="result-count">
+              Application link unavailable
+            </span>
+          `}
 
       </article>
     `;
+
   }).join("");
 }
+
+
+function filteredJobs(type=""){
+  const q=($("searchInput")?.value||"").toLowerCase().trim();
+  const location=$("locationFilter")?.value||"";
+  return allJobs.filter(j=>{
+    const hay=[j.title,j.description,j.skills,j.company,j.location].join(" ").toLowerCase();
+    return (!type||normalizeType(j.type)===type) && (!location||j.location===location) && (!q||hay.includes(q));
+  });
+}
+function updateHome(){
+  const jobs=filteredJobs($("typeFilter").value);
+  renderJobs("jobList",jobs);
+$("resultCount").textContent =
+  `${jobs.length} ${jobs.length === 1 ? "opportunity" : "opportunities"}`;}
+function populateLocations(){
+  const select=$("locationFilter"), current=select.value;
+  const locations=[...new Set(allJobs.map(j=>j.location).filter(Boolean))].sort();
+  select.innerHTML='<option value="">All locations</option>'+locations.map(l=>`<option value="${safeText(l)}">${safeText(l)}</option>`).join("");
+  select.value=locations.includes(current)?current:"";
+}
+
+
+async function loadJobs() {
+  try {
+    const response = await fetch(`${GSH_API}/?sheet=jobs`, {
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error("Unable to load jobs");
+    }
+
+    const result = await response.json();
+
+    if (!result.success || !Array.isArray(result.data)) {
+      throw new Error("Invalid Jobs API response");
+    }
+
+    // Store all opportunities for homepage filters
+    allJobs = result.data;
+
+    // Populate location filter
+    populateLocations();
+
+    // Render all opportunities using homepage filters
+    updateHome();
+
+  } catch (error) {
+    console.error("Jobs loading error:", error);
+
+    const jobList = $("jobList");
+
+    if (jobList) {
+      jobList.innerHTML =
+        '<div class="error">Unable to load opportunities. Please try again later.</div>';
+    }
+  }
+}
+
+
+function showPage(page){
+  document.querySelectorAll(".page").forEach(el=>el.classList.add("hidden"));
+  const target=$(page+"Page"); if(target) target.classList.remove("hidden");
+  document.querySelectorAll(".nav-btn").forEach(btn=>btn.classList.toggle("active",btn.dataset.page===page));
+  if(location.hash!=="#"+page) history.replaceState(null,"","#"+page);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll(".nav-btn").forEach(btn=>btn.addEventListener("click",()=>showPage(btn.dataset.page)));
+window.addEventListener("hashchange",()=>showPage(location.hash.slice(1)||"home"));
+$("searchInput").addEventListener("input",updateHome);
+$("locationFilter").addEventListener("change",updateHome);
+$("typeFilter").addEventListener("change",updateHome);
+$("clearFilters").addEventListener("click",()=>{$("searchInput").value="";$("locationFilter").value="";$("typeFilter").value="";updateHome();});
+$("year").textContent=new Date().getFullYear();
+showPage(location.hash.slice(1)||"home");
+loadJobs();
+setInterval(loadJobs, 5 * 60 * 1000); // Refresh spreadsheet listings every five minutes.
+
+/* JSONP lets the static GitHub Pages site read the shared counter
+   without needing a server or permissive browser CORS settings. */
+
+
 let visitorSession = sessionStorage.getItem("gsh_session");
 
 if (!visitorSession) {
