@@ -54,6 +54,9 @@
     .job-list{display:grid;gap:13px}
     .job-card{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;transition:.2s}
     .job-card:hover{border-color:#65418f;transform:translateY(-1px)}
+    .job-card-info{min-width:0}
+    .job-card .meta{line-height:1.8}
+    .job-card .meta strong{color:#c58aff}
     .job-type{display:inline-flex;align-items:center;gap:6px;color:#d1aaff;background:#27163b;border:1px solid #48266b;border-radius:30px;padding:5px 9px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
     .job-card h3{font-size:19px;margin:11px 0 7px;letter-spacing:-.02em}
     .description{color:var(--muted);font-size:13px;line-height:1.65;margin:0;white-space:pre-line}
@@ -278,7 +281,7 @@
   |
   ONLINE: <strong id="onlineCount">Loading...</strong>
 </div>
-</div>  </div>
+</div>
 </header>
 
 <main class="shell">
@@ -297,10 +300,7 @@
         <input id="searchInput" class="field" type="search" placeholder="Search job title, company or skill…">
         <select id="locationFilter" class="field"><option value="">All locations</option></select>
         <select id="typeFilter" class="field">
-          <option value="">All opportunities</option>
-          <option value="job">Jobs</option>
-          <option value="internship">Internships</option>
-          <option value="walk-in">Walk-ins</option><option value="apprenticeship">Apprenticeships</option>
+          <option value="">All opportunities</option><option value="job">Jobs</option><option value="internship">Internships</option><option value="walk-in">Walk-ins</option><option value="apprenticeship">Apprenticeships</option>
 
         </select>
       </div>
@@ -606,6 +606,8 @@ function safeText(value){return String(value||"").replace(/[&<>"']/g,c=>({"&":"&
 function renderJobs(targetId, jobs) {
   const target = $(targetId);
 
+  if (!target) return;
+
   if (!jobs.length) {
     target.innerHTML =
       '<div class="empty">No opportunities found right now. Please check again soon.</div>';
@@ -613,104 +615,33 @@ function renderJobs(targetId, jobs) {
   }
 
   target.innerHTML = jobs.map(job => {
+    const jobId = String(job.jobId || job.jobid || "").trim();
+    const type = normalizeType(job.type)
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, char => char.toUpperCase());
 
-    // Must-have skills list
-    const mustHaveSkills = (job.mustHaveSkills || "")
-      .split(/[;,|]/)
-      .map(s => s.trim())
-      .filter(Boolean);
-
-    // Application link
-    const apply = (
-      job.applyLink ||
-      job.applylink ||
-      job.apply_link ||
-      job.applyurl ||
-      ""
-    ).trim();
-
-    const linkOk = /^https?:\/\//i.test(apply);
+    const detailsLink = jobId
+      ? `job.html?id=${encodeURIComponent(jobId)}`
+      : "";
 
     return `
       <article class="job-card">
-
-        <div>
-
-          <span class="job-type">
-            ${safeText(normalizeType(job.type))}
-          </span>
-
+        <div class="job-card-info">
           <h3>${safeText(job.title || "Untitled opportunity")}</h3>
 
-          <p class="description">
-            ${safeText(job.description || "More details will be shared soon.")}
-          </p>
-
           <div class="meta">
-
-            ${job.company
-              ? `<span>${safeText(job.company)}</span>`
-              : ""}
-
-            ${job.location
-              ? `<span>⌖ ${safeText(job.location)}</span>`
-              : ""}
-
-            ${job.deadline
-              ? `<span>Deadline: ${safeText(job.deadline)}</span>`
-              : ""}
-
+            <span><strong>Company:</strong> ${safeText(job.company || "Not specified")}</span>
+            <span><strong>Location:</strong> ${safeText(job.location || "Not specified")}</span>
+            <span><strong>Type:</strong> ${safeText(type)}</span>
+            <span><strong>Experience:</strong> ${safeText(job.experience || "Not specified")}</span>
           </div>
-
-          <div class="job-extra">
-
-            ${job.workMode
-              ? `<div><strong>Work Mode:</strong> ${safeText(job.workMode)}</div>`
-              : ""}
-
-            ${job.experience
-              ? `<div><strong>Experience Required:</strong> ${safeText(job.experience)}</div>`
-              : ""}
-
-            ${job.minimumSkillsRequired
-              ? `<div><strong>Minimum Skills Required:</strong> ${safeText(job.minimumSkillsRequired)}</div>`
-              : ""}
-
-          </div>
-
-          ${mustHaveSkills.length
-            ? `
-              <div class="skills">
-                <strong style="width:100%">Must-Have Skills</strong>
-
-                ${mustHaveSkills.map(skill =>
-                  `<span class="skill">${safeText(skill)}</span>`
-                ).join("")}
-
-              </div>
-            `
-            : ""}
-
         </div>
 
-        ${linkOk
-          ? `
-            <a class="apply"
-               href="${safeText(apply)}"
-               target="_blank"
-               rel="noopener noreferrer">
-               APPLY NOW ↗
-            </a>
-          `
-          : `
-            <span class="result-count">
-              Application link unavailable
-            </span>
-          `}
-
+        ${jobId
+          ? `<a class="apply" href="${detailsLink}">VIEW DETAILS</a>`
+          : `<span class="result-count">Details unavailable</span>`}
       </article>
     `;
-
   }).join("");
 }
 
