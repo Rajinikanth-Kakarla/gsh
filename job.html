@@ -307,6 +307,10 @@
         <span class="detail-label">Job ID</span>
         <span class="detail-value" id="jobId"></span>
       </div>
+      <div class="detail-item">
+  <span class="detail-label">Unique Apply Visits</span>
+  <span class="detail-value" id="applyVisitCount">Loading...</span>
+</div>
 
     </div>
 
@@ -368,6 +372,37 @@
   const requestedJobId = (params.get("id") || "").trim();
 
   const $ = id => document.getElementById(id);
+  async function loadApplicationCount(jobId) {
+  try {
+    const response = await fetch(
+      `${GSH_API}/?sheet=applicationCounts`,
+      { cache: "no-store" }
+    );
+
+    if (!response.ok) {
+      throw new Error("Could not load application counts");
+    }
+
+    const result = await response.json();
+
+    if (!result.success || !Array.isArray(result.data)) {
+      throw new Error("Invalid application counts response");
+    }
+
+    const jobCount = result.data.find(item =>
+      String(item.jobId || "").trim().toLowerCase() ===
+      String(jobId).trim().toLowerCase()
+    );
+
+    $("applyVisitCount").textContent = jobCount
+      ? jobCount.count
+      : "0";
+
+  } catch (error) {
+    console.error("Application count loading error:", error);
+    $("applyVisitCount").textContent = "Unavailable";
+  }
+}
   function getVisitorId() {
   let visitorId = localStorage.getItem("gshVisitorId");
 
@@ -440,6 +475,7 @@
       setValue("jobWorkMode", job.workMode);
       setValue("jobDeadline", job.deadline);
       setValue("jobId", job.jobId);
+      loadApplicationCount(job.jobId);
 
       setValue(
         "jobDescription",
