@@ -361,11 +361,23 @@
 <script>
   const GSH_API =
     "https://gsh-content-api.rajinikanthkakarla-03.workers.dev";
+  const APPLICATION_TRACKING_URL =
+  "https://script.google.com/macros/s/AKfycbzWl6ag9ZnZQL4KKOKYDAuIRcvwMBtlSp249VhlcPgaUK3Dw_STwwhm6h6x8-K0hrQO/exec";
 
   const params = new URLSearchParams(window.location.search);
   const requestedJobId = (params.get("id") || "").trim();
 
   const $ = id => document.getElementById(id);
+  function getVisitorId() {
+  let visitorId = localStorage.getItem("gshVisitorId");
+
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+    localStorage.setItem("gshVisitorId", visitorId);
+  }
+
+  return visitorId;
+}
 
   $("year").textContent = new Date().getFullYear();
 
@@ -453,9 +465,10 @@
       const applyLink = String(job.applyLink || "").trim();
 
       if (/^https?:\/\//i.test(applyLink)) {
-        $("applyButton").href = applyLink;
-        $("applyButton").hidden = false;
-      } else {
+  $("applyButton").href = applyLink;
+  $("applyButton").dataset.jobId = String(job.jobId || "").trim();
+  $("applyButton").hidden = false;
+} else {
         $("applyUnavailable").hidden = false;
       }
 
@@ -473,6 +486,38 @@
       );
     }
   }
+
+  $("applyButton").addEventListener("click", function () {
+  const jobId = this.dataset.jobId;
+
+  if (!jobId) return;
+
+  const payload = JSON.stringify({
+    jobId: jobId,
+    visitorId: getVisitorId()
+  });
+
+  const trackingData = new Blob(
+    [payload],
+    { type: "text/plain" }
+  );
+
+  const sent = navigator.sendBeacon(
+    APPLICATION_TRACKING_URL,
+    trackingData
+  );
+
+  if (!sent) {
+    fetch(APPLICATION_TRACKING_URL, {
+      method: "POST",
+      mode: "no-cors",
+      body: trackingData,
+      keepalive: true
+    }).catch(error => {
+      console.error("Application tracking error:", error);
+    });
+  }
+});
 
   $("shareButton").addEventListener("click", async () => {
     const button = $("shareButton");
